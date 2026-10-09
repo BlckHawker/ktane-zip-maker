@@ -1,9 +1,12 @@
 import Fuse from "fuse.js"
 import type { RepositoryFile, SearchResult } from "./types"
 
+//Searches paths using fuzzy matching.
 export class FileSearch {
     private fuse: Fuse<RepositoryFile>;
 
+    //Create one instance per scanned repository, then reuse it for
+    // subsequent queries instead of rebuilding the search index each time.
     constructor(files: RepositoryFile[]) {
         this.fuse = new Fuse(files, {
             keys: [
@@ -15,6 +18,12 @@ export class FileSearch {
         })
     }
 
+    /**
+     * Returns the best fuzzy matches for a query.
+     *
+     * @param query - search text.
+     * @param limit - Maximum number of results; defaults to 100.
+     */
     search(query: string, limit = 100): SearchResult[] {
         const normalizeQuery = query.trim();
 

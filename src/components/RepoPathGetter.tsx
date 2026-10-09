@@ -38,8 +38,6 @@ export default function RepoPathGetter(props: RepoPathGetterProps) {
 
     return (
         <div>
-            <p>Select your KtaneContent repository directory:</p>
-
             <button type="button" onClick={selectRepoPath}>
                 Choose Repository Folder
             </button>
