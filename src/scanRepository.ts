@@ -15,9 +15,7 @@ export async function scanRepository(
         for await (const entry of directory.values()) {
             // Skip directories that don't need to be included.
             if (entry.kind === "directory" && ignoredDirectoryNames.includes(entry.name)) 
-            {
                 continue;
-            }
 
             const path = parentPath
                 ? `${parentPath}/${entry.name}`

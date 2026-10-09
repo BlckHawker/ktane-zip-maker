@@ -10,9 +10,9 @@ export default function App() {
     const [isScanning, setIsScanning] = useState(false);
     //Files from the repo
     const [repoFiles, setRepoFiles] = useState<RepositoryFile[]>([]);
-    //Ellipses to show not hanging
+    //Ellipse to show not hanging
     const [scanningDots, setScanningDots] = useState("");
-
+    const ignoredDirectories = [".git", "hooks"]
     //load the file from the repo when the repoDirectory is changed
     useEffect(() => {
     let cancelled = false;
@@ -28,7 +28,7 @@ export default function App() {
         setRepoFiles([]);
 
         try {
-            const files = await scanRepository(repoDirectory, []);
+            const files = await scanRepository(repoDirectory, ignoredDirectories);
 
             if (!cancelled) {
                 setRepoFiles(files);
@@ -52,7 +52,7 @@ export default function App() {
         };
     }, [repoDirectory]);
 
-    //update the elipse when scanning to show program not hanging
+    //update the ellipse when scanning to show program not hanging
     useEffect(() => {
     if (!isScanning) {
         setScanningDots("");

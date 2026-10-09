@@ -3,8 +3,42 @@ import { FileSearch } from "../classes";
 import { LintZipBuilderProps } from "../types";
 export default function LintZipBuilder(props: LintZipBuilderProps) {
     const [query, setQuery] = useState<string>("");
-    const [selectedPaths, setSelectedPaths] = useState<Set<string>>(() => new Set());
     const [resultLimit] = useState(100);
+    const requiredFiles = new Set<string>( [
+            `HTML/css/dark-theme.css`,
+            `HTML/css/font.css`,
+            `HTML/css/main.css`,
+            `HTML/css/normalize.css`,
+            `HTML/font/SpecialElite.ttf`,
+            `HTML/img/page-bg-noise-01.png`,
+            `HTML/img/page-bg-noise-02.png`,
+            `HTML/img/page-bg-noise-03.png`,
+            `HTML/img/page-bg-noise-04.png`,
+            `HTML/img/page-bg-noise-05.png`,
+            `HTML/img/page-bg-noise-06.png`,
+            `HTML/img/page-bg-noise-07.png`,
+            `HTML/img/page-bg-noise-01-dark.png`,
+            `HTML/img/page-bg-noise-02-dark.png`,
+            `HTML/img/page-bg-noise-03-dark.png`,
+            `HTML/img/page-bg-noise-04-dark.png`,
+            `HTML/img/page-bg-noise-05-dark.png`,
+            `HTML/img/page-bg-noise-06-dark.png`,
+            `HTML/img/page-bg-noise-07-dark.png`,
+            `HTML/img/web-background.jpg`,
+            `HTML/img/web-background-dark.jpg`,
+            `HTML/js/jquery-ui.1.13.2.min.js`,
+            `HTML/js/ktane-utils.js`,
+            `HTML/js/ruleseed.js`,
+            `HTML/js/Utilities/array-utils.js`,
+            `HTML/js/Utilities/coord-utils.js`,
+            `HTML/js/Utilities/math-utils.js`,
+            `HTML/js/Utilities/plotly-2.25.2.min.js`,
+            `HTML/js/Utilities/set-utils.js`,
+            `HTML/js/Utilities/svg-utils.js`,
+            `HTML/js/Utilities/ui-utils.js`,
+        ]);
+    const [selectedPaths, setSelectedPaths] = useState<Set<string>>(() => new Set(requiredFiles));
+    
 
     //Change the search index looked through if file change
     const fileSearch = useMemo(
@@ -26,6 +60,10 @@ export default function LintZipBuilder(props: LintZipBuilderProps) {
 
     //Update if a file should be selected for zipping
     function updateSelection(filePath: string, selected: boolean) {
+        if(!selected && requiredFiles.has(filePath)) {
+                return;
+        }
+
         setSelectedPaths(previous => {
             const next = new Set(previous);
 
@@ -41,90 +79,76 @@ export default function LintZipBuilder(props: LintZipBuilderProps) {
     
     return (
         <div>
-            {props.repoFiles.length === 0 ? (
-                <p>
-                    Select a valid repo directory before being able to select files.
-                </p>
-            ) : (
-                <>
-                    <label htmlFor="file-search">
-                        Search repository files:
-                    </label>
-                    <input
-                        id="file-search"
-                        type="search"
-                        value={query}
-                        onChange={event => setQuery(event.target.value)}
-                        placeholder="Enter a filename or path"
-                    />
+            <label htmlFor="file-search">
+                Search repository files:
+            </label>
+            <input
+                id="file-search"
+                type="search"
+                value={query}
+                onChange={event => setQuery(event.target.value)}
+                placeholder="Enter a filename or path"
+            />
+            <p>
+                Showing {results.length} results (maximum {resultLimit}).
+            </p>
+            <section>
+                <h2>Search Results</h2>
+                {query.trim() === "" ? (
+                    <p>Enter a search term to find files.</p>
+                ) : results.length === 0 ? (
+                    <p>No matching files found.</p>
+                ) : (
+                    results.map(({ file }) => (
+                        <div key={file.path}>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={selectedPaths.has(file.path)}
+                                    onChange={event =>
+                                        updateSelection(
+                                            file.path,
+                                            event.target.checked
+                                        )
+                                    }
+                                />
+                                {file.path}
+                            </label>
+                        </div>
+                    ))
+                )}
+            </section>
+            <hr />
+            <section>
+                <h2>Selected Files ({selectedFiles.length})</h2>
+                {selectedFiles.length === 0 ? (
+                    <p>No files selected.</p>
+                ) : (
+                    <ul>
+                        {selectedFiles.map(file => (
+                            <li key={file.path}>
+                                {file.path}{" "}
+                                {!requiredFiles.has(file.path) && (
+                                    <button
+                                        type="button"
+                                        onClick={() => updateSelection(file.path, false)}
+                                    >
+                                        Remove
+                                    </button>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
 
-                    <p>
-                        Showing {results.length} results (maximum {resultLimit}).
-                    </p>
-
-                    <section>
-                        <h2>Search Results</h2>
-
-                        {query.trim() === "" ? (
-                            <p>Enter a search term to find files.</p>
-                        ) : results.length === 0 ? (
-                            <p>No matching files found.</p>
-                        ) : (
-                            results.map(({ file }) => (
-                                <div key={file.path}>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedPaths.has(file.path)}
-                                            onChange={event =>
-                                                updateSelection(
-                                                    file.path,
-                                                    event.target.checked
-                                                )
-                                            }
-                                        />
-                                        {file.path}
-                                    </label>
-                                </div>
-                            ))
-                        )}
-                    </section>
-
-                    <hr />
-
-                    <section>
-                        <h2>Selected Files ({selectedFiles.length})</h2>
-
-                        {selectedFiles.length === 0 ? (
-                            <p>No files selected.</p>
-                        ) : (
-                            <ul>
-                                {selectedFiles.map(file => (
-                                    <li key={file.path}>
-                                        {file.path}{" "}
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                updateSelection(file.path, false)
-                                            }
-                                        >
-                                            Remove
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-
-                        <button
-                            type="button"
-                            disabled={selectedFiles.length === 0}
-                            onClick={() => props.onCreateZip(selectedFiles)}
-                        >
-                            Create ZIP
-                        </button>
-                    </section>
-                </>
-            )}
+                <button
+                    type="button"
+                    disabled={selectedFiles.length === 0}
+                    onClick={() => props.onCreateZip(selectedFiles)}
+                >
+                    Create ZIP
+                </button>
+            </section>
         </div>
     );
 }

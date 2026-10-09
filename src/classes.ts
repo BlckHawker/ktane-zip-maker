@@ -24,7 +24,7 @@ export class FileSearch {
      * @param query - search text.
      * @param limit - Maximum number of results; defaults to 100.
      */
-    search(query: string, limit = 100): SearchResult[] {
+    search(query: string, limit: number): SearchResult[] {
         const normalizeQuery = query.trim();
 
         if(!normalizeQuery) {
