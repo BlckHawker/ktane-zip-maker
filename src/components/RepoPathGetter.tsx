@@ -2,40 +2,53 @@ import { useState } from "react";
 import { RepoPathGetterProps } from "../types";
 import fs from "node:fs/promises";
 import path from "node:path"
+import { error } from "node:console";
 export default function RepoPathGetter(props: RepoPathGetterProps) {
     const directoryName = "KtaneContent";
+    const [selectedDirectory, setSelectedDirectory] = useState<FileSystemDirectoryHandle | null>(null);
     const [warningText, setWarningText] = useState<string>("");
-    const [unsanitizedRepoPath, getUnsanitizedRepoPath] = useState<string>("")
-        async function validateRepoPath(pathStr: string) {
-        const sanitizedPath = pathStr.trim();
+    async function selectRepoPath() {
+        setWarningText("");
         try {
-                const fileStats = await fs.stat(sanitizedPath);
-                if (!fileStats.isDirectory()) {
-                    setWarningText("\nThat path is not a directory.");
-                }
-                else if (path.basename(sanitizedPath) !== directoryName) {
-                    setWarningText(`\nThat path does not have the target name "${directoryName}".`);
-                }
-                else {
-                    setWarningText("\nRepository found!");
-                    props.setRepoPath(sanitizedPath)
-                }
-        
-            } catch (e: unknown) {
-                let error = typeof e === "string" ? e.toUpperCase() : e instanceof Error ? e.message : 
-                "Repository can't be found";
-                setWarningText(error);
+            const directoryHandle = await window.showDirectoryPicker();
+            if (directoryHandle.name !== directoryName) {
+                setDirectoryError(`Please select a directory named "${directoryName}".`)
+                setSelectedDirectory(directoryHandle);
+                return;
             }
+            setWarningText("Repository found!");
+            setSelectedDirectory(directoryHandle);
+            props.setRepoDirectory(directoryHandle);
+        } catch (error: unknown) {
+            if (error instanceof DOMException && error.name === "AbortError") {
+                setWarningText("Directory selection cancelled.");
+                return;
+            }
+            let errorText = error instanceof Error
+                            ? error.message
+                            : "Unable to access the selected directory."
+            setDirectoryError(errorText)
+        }
+    }
+
+    function setDirectoryError(errorText: string) {
+        setWarningText(errorText);
+        props.setRepoDirectory(null);
     }
 
     return (
         <div>
-            <p>Paste the path to the repo:</p>
-            <input type="text" onChange={(e) => getUnsanitizedRepoPath(e.target.value)}  />
-            <input type="button" value="Submit" onClick={() => validateRepoPath(unsanitizedRepoPath)} />
-            <p>{warningText}</p>
+            <p>Select your KtaneContent repository directory:</p>
+
+            <button type="button" onClick={selectRepoPath}>
+                Choose Repository Folder
+            </button>
+
+            {selectedDirectory && (
+                <p>Selected directory: {selectedDirectory.name}</p>
+            )}
+
+            <p role="status">{warningText}</p>
         </div>
     );
-
-
 }

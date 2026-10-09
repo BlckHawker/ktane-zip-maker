@@ -9,5 +9,12 @@ export interface SearchResult {
 }
 
 export interface RepoPathGetterProps {
-    setRepoPath: React.Dispatch<React.SetStateAction<string|null>>
+    setRepoDirectory: React.Dispatch<React.SetStateAction<FileSystemDirectoryHandle|null>>
+}
+
+// Extend the browser's Window interface with the File System Access API.
+declare global {
+    interface Window {
+        showDirectoryPicker(): Promise<FileSystemDirectoryHandle>;
+    }
 }
