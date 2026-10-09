@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
 import RepoPathGetter from "./RepoPathGetter";
-import FileSelector from "./LintZipBuilder";
+import LintZipBuilder from "./LintZipBuilder";
 import { RepositoryFile } from "../types";
 import { scanRepository } from "../scanRepository";
+import { createZip } from "../createZip";
 export default function App() {
     const [repoDirectory, setRepoDirectory] = useState<FileSystemDirectoryHandle | null>(null);
     //Scanning all the files in the repo
@@ -71,8 +72,30 @@ export default function App() {
 }, [isScanning]);
 
 
-    function onCreateZip(selectedFiles: RepositoryFile[]) {
-        throw new Error("Function not implemented")
+    async function onCreateZip(selectedFiles: RepositoryFile[]) {
+        //Don't do anything if there's no repo, we're scanning, or no files are selected
+        if(!repoDirectory || isScanning || selectedFiles.length === 0)
+            return;
+
+        const zipName = window.prompt("Enter a name for the zip", "Manual");
+
+        //If the user presses cancel, don't do anything
+        if(zipName === null)
+            return;
+
+        const sanitizedZipName = zipName.trim();
+
+        if(!sanitizedZipName) {
+            window.alert("Enter a name for the zip");
+            return;
+        }
+
+        try {
+            await createZip(repoDirectory, selectedFiles, sanitizedZipName);
+        } catch (error) {
+            console.error("Unable to create zip", error)
+            window.alert("Unable to create zip. Check console for details.");
+        }
     }
     
     return (
@@ -82,7 +105,7 @@ export default function App() {
             {isScanning ? <p>Scanning repository{scanningDots}</p> :
             repoDirectory === null ? <p>Select a valid repository directory.</p> :
             repoFiles.length === 0 ? <p>No files found, or the repository could not be scanned.</p> :
-            <FileSelector repoFiles={repoFiles} onCreateZip={onCreateZip}/>
+            <LintZipBuilder repoFiles={repoFiles} onCreateZip={onCreateZip}/>
             }
         </main>
     );
