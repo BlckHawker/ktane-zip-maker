@@ -4,7 +4,6 @@ import fs from "node:fs/promises";
 import path from "node:path"
 
 const directoryName = "KtaneContent";
-const rl = createInterface({ input, output });
 
 async function main() {
     console.log("KTANE Lint Zip Maker\n");
@@ -12,7 +11,6 @@ async function main() {
     const repoPath = getRepoDirectoryPath();
 
     if(repoPath == null) {
-        await rl.close();
         return;
     }
 
@@ -20,11 +18,10 @@ async function main() {
 
     
 
-    await rl.close();
 }
 
 async function getRepoDirectoryPath(): Promise<string | null> {
-    const repoPath = (await rl.question('Paste the path to the repo: ')).trim();
+    const repoPath = ""
 
     try {
         const fileStats = await fs.stat(repoPath);
